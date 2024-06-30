@@ -12,7 +12,13 @@ The arduino node receives the command order from the base controller node and co
 ![alt text](/Images/Arduino.png)  
 
 ## Result
-This is the complete map of the robot made, and compare it with the real map  
+This is the complete map of the robot made, and compare it with the actual map  
 ![alt text](./Images/result.png)  
 
+## Compare between the map in RVIZ and the actual map
+
 ![alt text](./Images/realmap.png)
+
+![alt text](./Images/rvizmap.png)  
+
+We can observe that the generated map has some discrepancies compared to the actual map. However, the errors are not significant and are within an acceptable range. We can conclude that the combination of LiDAR and Hector SLAM achieves good performance.
