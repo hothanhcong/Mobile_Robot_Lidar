@@ -2,6 +2,10 @@
 #### Link demo: https://www.youtube.com/watch?v=NtcUF39E648   
 
 ![alt text](/Images/image.png)  
+
+![alt text](./Images/robot.png)  
+
+
 The robot is controlled using a **computer keyboard** and build a **2D map** utilizing ROS in its environment. It is powered by ROS running on a Raspberry Pi 4B and an Arduino that controls two motors with encoders.  
 
 Robot is a differential drive robot with the motors placed on the same axis.  
