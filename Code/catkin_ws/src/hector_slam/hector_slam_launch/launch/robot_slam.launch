@@ -1,0 +1,11 @@
+<launch>
+	<include file="$(find hector_slam_launch)/launch/tutorial.launch">
+	</include>
+	
+	<!-- gmapping -->
+	<node name="gmapping" pkg="gmapping" type="slam_gmapping" >
+		<param name="base_frame" value="base_link"/>
+		<param name="odom_frame" value="odom"/> 
+		<param name="delta" value="0.1"/>  		
+	</node>
+</launch>
