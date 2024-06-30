@@ -5,4 +5,4 @@ Robot which uses SLAM (ROS) with a Lidar to build 2D map(using hector slam) in i
 Robot is a differential drive robot with the motors placed on the same axis.  
 
 ## Schematics
-![alt text](/Images/DesignSystem.png.png)
+![alt text](/Images/DesignSystem.png)
