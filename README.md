@@ -7,10 +7,12 @@ Robot is a differential drive robot with the motors placed on the same axis.
 ## Schematics
 ![alt text](/Images/DesignSystem.png)  
 
-### Arduino
+## Arduino
 The arduino node receives the command order from the base controller node and commands the motor speeds. It also sends back the encoder data needed for the odometry to the controller node through ROSSerial.  
 ![alt text](/Images/Arduino.png)  
 
-#### Result
+## Result
+This is the complete map of the robot made, and compare it with the real map  
+![alt text](./Images/result.png)  
 
-![alt text](./Images/result.png)
+![alt text](./Images/realmap.png)
