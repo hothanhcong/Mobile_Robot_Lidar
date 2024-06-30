@@ -1,0 +1,8 @@
+prefix=/home/ubuntu/catkin_ws/devel
+
+Name: baudrate
+Description: Description of baudrate
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

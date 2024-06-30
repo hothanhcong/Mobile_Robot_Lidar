@@ -1,0 +1,154 @@
+#!/usr/bin/env python
+
+import rospy
+from geometry_msgs.msg import Twist
+import sys, select, os
+if os.name == 'nt':
+    import msvcrt
+else:
+    import tty, termios
+
+ROBOT_MAX_LIN_VEL = 0.13
+ROBOT_MAX_ANG_VEL = 0.4
+# ROBOT_MAX_ANG_VEL = 0.4
+
+ROBOT_LINEAR_VEL_STEP_SIZE = 0.5
+ROBOT_ANGULAR_VEL_STEP_SIZE = 10.0
+
+ROBOT_RESET_ANGULAR = 0.0
+
+robot_node_name = 'robot_teleop'
+
+msg = """
+Control your robot!
+-------------------
+Moving key
+        w
+    a       d
+        x 
+
+w/x     : forward / backwardP
+a/d     : left / right
+s/space : stop robot
+
+Press Ctrl+C to quit
+"""
+
+err = """
+Communications failed -_-
+"""
+
+
+def getKey():
+    if os.name == 'nt':
+        return msvcrt.getch();
+
+    tty.setraw(sys.stdin.fileno())
+    rlist, _, _ = select.select([sys.stdin], [], [], 0.1)
+    if rlist:
+        key = sys.stdin.read(1)
+    else:
+        key = ''
+
+    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
+    return key 
+
+def vels(target_linear_vel, target_angular_vel):
+    return "currently:\tlinear vel %s\t angular vel %s " % (target_linear_vel, target_angular_vel)
+
+def makeSimpleProfile(output, input, slop):
+    if input > output:
+        output = min(input, output + slop)
+    elif input < output:
+        output = max(input, output - slop)
+    else:
+        output = input
+    return output
+
+def constrain(input, low, high):
+    if input < low:
+        input = low
+    elif input > high:
+        input = high
+    else:
+        input = input
+    return input
+
+def checkLinearLimitVelocity(vel):
+    vel = constrain(vel, -ROBOT_MAX_LIN_VEL, ROBOT_MAX_LIN_VEL)
+    return vel 
+
+def checkAngularLimitVelocity(vel):
+    vel = constrain(vel, -ROBOT_MAX_ANG_VEL, ROBOT_MAX_ANG_VEL)
+    return vel
+
+if __name__ == "__main__":
+    if os.name != 'nt':
+        settings = termios.tcgetattr(sys.stdin)
+
+    rospy.init_node(robot_node_name)
+    pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
+
+    target_linear_vel   = 0.0
+    target_angular_vel  = 0.0
+    control_linear_vel  = 0.0
+    control_angular_vel = 0.0
+
+    try:
+        print(msg)
+        while(1):
+            key = getKey()
+            if key == 'w': 
+                # target_linear_vel = checkLinearLimitVelocity(target_linear_vel+ROBOT_LINEAR_VEL_STEP_SIZE)
+                target_linear_vel = checkLinearLimitVelocity(ROBOT_MAX_LIN_VEL)
+                target_angular_vel = checkAngularLimitVelocity(ROBOT_RESET_ANGULAR)
+                print(vels(target_linear_vel, target_angular_vel))
+            elif key == 's':
+                target_linear_vel = checkLinearLimitVelocity(-ROBOT_MAX_LIN_VEL)
+                target_angular_vel = checkAngularLimitVelocity(ROBOT_RESET_ANGULAR)
+                print(vels(target_linear_vel, target_angular_vel))
+            elif key == 'a':
+                # target_linear_vel = checkLinearLimitVelocity(ROBOT_MAX_LIN_VEL)
+                target_angular_vel = checkAngularLimitVelocity(-(ROBOT_MAX_ANG_VEL))
+                print(vels(target_linear_vel, target_angular_vel))
+            elif key == 'd':
+                # target_linear_vel = checkLinearLimitVelocity(ROBOT_MAX_LIN_VEL)
+                target_angular_vel = checkAngularLimitVelocity((ROBOT_MAX_ANG_VEL))
+                print(vels(target_linear_vel, target_angular_vel))
+            elif key == ' ':
+                target_linear_vel   = 0.0
+                control_linear_vel  = 0.0
+                target_angular_vel  = 0.0
+                control_angular_vel = 0.0
+                print(vels(target_linear_vel, target_angular_vel))
+            else: 
+                if (key == '\x03'):
+                    break
+
+
+            twist = Twist()
+
+            control_linear_vel = makeSimpleProfile(control_linear_vel, target_linear_vel, (ROBOT_LINEAR_VEL_STEP_SIZE/2.0))
+            twist.linear.x = control_linear_vel
+            twist.linear.y = 0.0
+            twist.linear.z = 0.0
+
+            control_angular_vel = makeSimpleProfile(control_angular_vel, target_angular_vel, (ROBOT_ANGULAR_VEL_STEP_SIZE/2.0))
+            twist.angular.x = 0.0
+            twist.angular.y = 0.0
+            twist.angular.z = control_angular_vel
+
+            pub.publish(twist)
+
+    except:
+        print(err)
+
+    finally:
+        twist = Twist()
+        twist.linear.x = 0.0; twist.linear.y = 0.0; twist.linear.z = 0.0
+        twist.angular.x = 0.0; twist.angular.y = 0.0; twist.angular.z = 0.0
+        pub.publish(twist)
+
+    if os.name != 'nt':
+        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
+
